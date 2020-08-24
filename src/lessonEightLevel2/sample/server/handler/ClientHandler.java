@@ -1,6 +1,6 @@
-package sample.Server.handler;
+package lessonEightLevel2.sample.server.handler;
 
-import sample.Server.service.ServerImpl;
+import lessonEightLevel2.sample.server.service.ServerImpl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class ClientHandler {
+
     private ServerImpl server;
     private Socket socket;
     private DataInputStream dis;
@@ -26,8 +27,6 @@ public class ClientHandler {
                 try {
                     authentication();
                     readMessage();
-                } catch (IOException e) {
-                    e.printStackTrace();
                 } finally {
                     closeConnection();
                 }
@@ -37,26 +36,30 @@ public class ClientHandler {
         }
     }
 
-    private void authentication() throws IOException {
-        while (true) {
-            String str = dis.readUTF();
-            if (str.startsWith("/auth")) {
-                String[] dataArray = str.split("\\s");
-                String nick = server.getAuthService().getNick(dataArray[1], dataArray[2]);
-                if (nick != null) {
-                    if (!server.isNickBusy(nick)) {
-                        sendMsg("/authOk " + nick);
-                        this.nick = nick;
-                        server.broadcastMsg(this.nick + " Join to chat");
-                        server.subscribe(this);
-                        return;
+    private void authentication() {
+        try {
+            while (true) {
+                String str = dis.readUTF();
+                if (str.startsWith("/auth")) {
+                    String[] dataArray = str.split("\\s");
+                    String nick = server.getAuthService().getNick(dataArray[1], dataArray[2]);
+                    if (nick != null) {
+                        if (!server.isNickBusy(nick)) {
+                            sendMsg("/authOk " + nick);
+                            this.nick = nick;
+                            server.broadcastMsg(this.nick + " join to chat");
+                            server.subscribe(this);
+                            return;
+                        } else {
+                            sendMsg("You are logged in");
+                        }
                     } else {
-                        sendMsg("You are logged in");
+                        sendMsg("Incorrect password or login");
                     }
-                } else {
-                    sendMsg("Incorrect password or login");
                 }
             }
+        } catch (IOException e) {
+            System.out.println("authentication error");
         }
     }
 
@@ -72,14 +75,15 @@ public class ClientHandler {
         try {
             while (true) {
                 String clientStr = dis.readUTF();
-                System.out.println("from " + this.nick + ": " + clientStr);
-                if (clientStr.equals("/exit")) {
-                    return;
-                }
-                if (clientStr.startsWith("/w") && clientStr.split("\\s").length > 2) {
-                    String toUser = clientStr.split("\\s")[1];
-                    String msg = clientStr.split(" ")[2];
-                    privateMsg(ClientHandler.this, toUser, msg);
+                if (clientStr.startsWith("/")) {
+                    System.out.println("from " + this.nick + ": " + clientStr);
+                    if (clientStr.equals("/exit")) {
+                        break;
+                    } else if (clientStr.startsWith("/w") && clientStr.split("\\s").length > 2) {
+                        String toUser = clientStr.split("\\s")[1];
+                        String msg = clientStr.split(" ")[2];
+                        privateMsg(ClientHandler.this, toUser, msg);
+                    }
                 } else {
                     server.broadcastMsg(nick + ": " + clientStr);
                 }
@@ -109,8 +113,9 @@ public class ClientHandler {
 
     private void closeConnection() {
         server.unsubscribe(this);
-        server.broadcastMsg(this.nick + ": exit from chat");
-
+        if (!this.nick.equals("")) {
+            server.broadcastMsg(this.nick + ": exit from chat");
+        }
         try {
             dis.close();
         } catch (IOException e) {

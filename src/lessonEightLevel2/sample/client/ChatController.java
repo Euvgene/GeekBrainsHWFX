@@ -1,4 +1,4 @@
-package sample.Client;
+package lessonEightLevel2.sample.client;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
@@ -37,7 +37,7 @@ public class ChatController {
     DataOutputStream dos;
 
     private final String IP_ADRESS = "localhost";
-    private final int PORT = 8189;
+    private final int PORT = 5115;
 
     private void setAuthorized(boolean isAuthorized) {
         if (!isAuthorized) {
@@ -54,19 +54,23 @@ public class ChatController {
         }
     }
 
-    public void getMessageText() {
+    public void start() {
         try {
+            setAuthorized(false);
             socket = new Socket(IP_ADRESS, PORT);
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
-            setAuthorized(false);
             Thread t1 = new Thread(() -> {
                 try {
                     while (true) {
                         String strMsg = dis.readUTF();
                         if (strMsg.startsWith("/authOk")) {
                             setAuthorized(true);
+                            socket.setSoTimeout(0);
                             break;
+                        } else if (authPanel.isVisible()) {
+                            socket.setSoTimeout(10000);
+
                         }
                         textArea.appendText(strMsg + "\n");
                     }
@@ -78,19 +82,27 @@ public class ChatController {
                         textArea.appendText(strMsg + "\n");
                     }
                 } catch (IOException | ArrayIndexOutOfBoundsException e) {
-                    textArea.appendText("You are disconnected" + "\n");
+                    System.out.println("disconnected");
+                } finally {
+                    try {
+                        setAuthorized(false);
+                        socket.close();
+                        textArea.clear();
+                    } catch (IOException e) {
+                        System.out.println("disconnected");
+                    }
                 }
             });
             t1.setDaemon(true);
             t1.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            textArea.appendText("Server is not working!" + "\n");
         }
     }
 
     public void tryToAuth() {
         if (socket == null || socket.isClosed()) {
-            getMessageText();
+            start();
         }
         try {
             dos.writeUTF("/auth " + loginfield.getText() + " " + passwordfiled.getText());
@@ -126,4 +138,3 @@ public class ChatController {
         textArea.editableProperty().setValue(false);
     }
 }
-

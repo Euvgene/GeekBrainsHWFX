@@ -1,5 +1,6 @@
-package sample.Server.inter;
-import sample.Server.handler.ClientHandler;
+package lessonEightLevel2.sample.server.inter;
+
+import lessonEightLevel2.sample.server.handler.ClientHandler;
 
 public interface Server {
 
@@ -13,4 +14,3 @@ public interface Server {
 
     AuthService getAuthService();
 }
-

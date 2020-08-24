@@ -1,6 +1,6 @@
-package sample.Server.service;
+package lessonEightLevel2.sample.server.service;
 
-import sample.Server.inter.AuthService;
+import lessonEightLevel2.sample.server.inter.AuthService;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +53,4 @@ public class AuthServiceImpl implements AuthService {
             return nick;
         }
     }
-
-
 }

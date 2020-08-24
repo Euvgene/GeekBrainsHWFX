@@ -1,8 +1,8 @@
-package sample.Server.service;
+package lessonEightLevel2.sample.server.service;
 
-import sample.Server.inter.Server;
-import sample.Server.handler.ClientHandler;
-import sample.Server.inter.AuthService;
+import lessonEightLevel2.sample.server.inter.Server;
+import lessonEightLevel2.sample.server.handler.ClientHandler;
+import lessonEightLevel2.sample.server.inter.AuthService;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -16,7 +16,7 @@ public class ServerImpl implements Server {
 
     public ServerImpl() {
         try {
-            ServerSocket serverSocket = new ServerSocket(8189);
+            ServerSocket serverSocket = new ServerSocket(5115);
             authService = new AuthServiceImpl();
             authService.start();
             clients = new LinkedList<>();
@@ -55,11 +55,23 @@ public class ServerImpl implements Server {
     @Override
     public synchronized void subscribe(ClientHandler client) {
         clients.add(client);
+        broadcastClientsList();
     }
 
     @Override
     public synchronized void unsubscribe(ClientHandler client) {
         clients.remove(client);
+        if (!client.getNick().equals("")) {
+            broadcastClientsList();
+        }
+    }
+
+    public synchronized void broadcastClientsList() {
+        StringBuilder sb = new StringBuilder("/clients ");
+        for (ClientHandler o : clients) {
+            sb.append(o.getNick() + " ");
+        }
+        broadcastMsg(sb.toString());
     }
 
     @Override
@@ -67,3 +79,4 @@ public class ServerImpl implements Server {
         return authService;
     }
 }
+

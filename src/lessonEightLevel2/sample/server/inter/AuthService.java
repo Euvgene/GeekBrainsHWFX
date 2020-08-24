@@ -1,4 +1,4 @@
-package sample.Server.inter;
+package lessonEightLevel2.sample.server.inter;
 
 public interface AuthService {
     void start();
@@ -7,4 +7,3 @@ public interface AuthService {
 
     void stop();
 }
-

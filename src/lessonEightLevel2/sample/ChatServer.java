@@ -1,6 +1,6 @@
-package sample;
+package lessonEightLevel2.sample;
 
-import sample.Server.service.ServerImpl;
+import lessonEightLevel2.sample.server.service.ServerImpl;
 
 public class ChatServer {
     public static void main(String[] args) {
